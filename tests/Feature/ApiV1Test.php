@@ -131,6 +131,9 @@ class ApiV1Test extends TestCase
             ->assertOk()
             ->assertJsonPath('data.changes', []);
 
+        $this->flushHeaders();
+        $this->app['auth']->forgetGuards();
+
         $this->getJson('/api/v1/dashboard')->assertUnauthorized()->assertJsonPath('success', false);
     }
 }
