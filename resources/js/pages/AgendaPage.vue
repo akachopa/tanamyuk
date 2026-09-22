@@ -57,7 +57,17 @@ const visibleTasks = computed(() => {
     });
 });
 
-const pendingCount = computed(() => tasks.value.filter((task) => !task.done).length);
+const dayTasks = computed(() => tasks.value.filter((task) => {
+    if (usingDemo.value && selected.value !== todayKey.value) {
+        return false;
+    }
+    if (!usingDemo.value && task.dateKey && task.dateKey !== selected.value) {
+        return false;
+    }
+    return true;
+}));
+const pendingCount = computed(() => dayTasks.value.filter((task) => !task.done).length);
+const dayTotal = computed(() => dayTasks.value.length);
 const minutes = computed(() => visibleTasks.value.reduce((sum, task) => sum + Number(task.minutes || 0), 0));
 
 function mapTask(task) {
@@ -139,7 +149,7 @@ async function toggleTask(task) {
                 </button>
             </div>
             <div class="tabs">
-                <button class="tab" :class="{ active: filter === 'all' }" type="button" @click="filter = 'all'">Semua {{ usingDemo ? demo.tasks.filter((task) => task.scope !== 'home').length : tasks.length }}</button>
+                <button class="tab" :class="{ active: filter === 'all' }" type="button" @click="filter = 'all'">Semua {{ dayTotal }}</button>
                 <button class="tab" :class="{ active: filter === 'pending' }" type="button" @click="filter = 'pending'">Belum selesai {{ pendingCount }}</button>
                 <button class="tab" :class="{ active: filter === 'done' }" type="button" @click="filter = 'done'">Selesai</button>
             </div>
