@@ -1,59 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TanamYuk API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for TanamYuk, a companion for small urban gardens: kebun, siklus tanam, agenda, jurnal, panen, biaya, and crop recommendations.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.3+
+- Composer
+- SQLite (default) or another database supported by Laravel 12
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Run
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate:fresh --seed
+php artisan serve
+```
 
-## Learning Laravel
+Base URL: `http://localhost:8000/api/v1`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+The app name is `TanamYuk` (`APP_NAME` in `.env`). Authentication uses a Sanctum bearer token. Send `Authorization: Bearer {token}` on protected routes. Cookie/CSRF stateful auth is not enabled.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Response shape
 
-## Laravel Sponsors
+```json
+{ "success": true, "data": {}, "message": "optional" }
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```json
+{ "success": false, "message": "...", "errors": {} }
+```
 
-### Premium Partners
+List endpoints return `data` as an array.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Demo account
 
-## Contributing
+| Email | Password | Profile |
+| --- | --- | --- |
+| demo@tanamyuk.com | password | Robbi, kebun Kebun Samping Rumah, siklus pakcoy, cabai rawit, and tomat |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Registration creates a Gratis subscription (1 active garden, 3 active cycles) when the free plan exists.
 
-## Code of Conduct
+## Endpoints
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Public:
 
-## Security Vulnerabilities
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/forgot-password`
+- `POST /api/v1/auth/reset-password` (stub)
+- `GET /api/v1/assessments/questions`
+- `POST /api/v1/assessments`
+- `GET /api/v1/assessments/{id}/recommendations`
+- `GET /api/v1/commodities`
+- `GET /api/v1/commodities/{slug}`
+- `GET /api/v1/articles`
+- `GET /api/v1/articles/faqs`
+- `GET /api/v1/articles/{slug}`
+- `GET /api/v1/plans`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Authenticated:
 
-## License
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+- `PATCH /api/v1/auth/me`
+- `GET /api/v1/subscription`
+- `GET|POST /api/v1/gardens`, `GET|PUT|DELETE /api/v1/gardens/{id}`
+- `GET|POST /api/v1/cycles`, `GET|PUT /api/v1/cycles/{id}`
+- `POST /api/v1/cycles/{id}/activate`
+- `POST /api/v1/cycles/{id}/complete`
+- The same cycle routes are also available under `/api/v1/planting-cycles`
+- `GET|POST /api/v1/tasks`, `GET|PATCH /api/v1/tasks/{id}`
+- `POST /api/v1/tasks/{id}/complete`
+- `POST /api/v1/tasks/{id}/postpone`
+- `POST /api/v1/tasks/{id}/reopen`
+- `GET|POST /api/v1/journals`, `PATCH /api/v1/journals/{id}`
+- `GET|POST /api/v1/issues`, `PATCH /api/v1/issues/{id}`
+- `GET|POST /api/v1/expenses`, `PATCH /api/v1/expenses/{id}`
+- `GET|POST /api/v1/harvests`, `PATCH /api/v1/harvests/{id}`
+- `GET|POST /api/v1/orders`
+- `GET /api/v1/orders/{orderNumber}`
+- `GET /api/v1/orders/{orderNumber}/status` (stub)
+- `GET /api/v1/dashboard`
+- `POST /api/v1/sync/push`
+- `GET /api/v1/sync/pull`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Expense categories seeded for `category_code`: `benih`, `media`, `nutrisi`, `pot`, `alat`, `perlindungan`, `lain`.
